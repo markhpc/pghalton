@@ -28,6 +28,22 @@ def parse_args(args):
 
     return parser.parse_args(args[1:])
 
+def print_counts(pg_list):
+    gs = settings.general
+    acting_counts = [0]*(gs.get('potential_osds', 0))
+    up_counts = [0]*(gs.get('potential_osds', 0))
+
+    for pg in pg_list:
+        for osd in pg.get_acting():
+            acting_counts[osd]+=1
+        for osd in pg.get_up():
+            up_counts[osd]+=1
+
+    print "acting counts:"
+    print acting_counts
+    print "up_counts"
+    print up_counts
+
 
 def main(argv):
     setup_loggers()
@@ -55,18 +71,18 @@ def main(argv):
         up_index = pg.remap(up_map, up_index)
 #        pg.print_osds()
     PG.print_remap_counter()
+    print_counts(pg_list)
 
-    acting_counts = [0]*(gs.get('potential_osds', 0))
-    up_counts = [0]*(gs.get('potential_osds', 0))
-
-    for pg in pg_list:
-        for osd in pg.get_acting():
-            acting_counts[osd]+=1
-        for osd in pg.get_up():
-            up_counts[osd]+=1
-
-    print acting_counts
-    print up_counts
+    up_map.append(73)
+    up_map.sort()
+    
+    up_index = 0
+    PG.reset_remap_counter()
+    for pg in pg_list: 
+        up_index = pg.remap(up_map, up_index)
+        pg.print_osds()
+    PG.print_remap_counter()
+    print_counts(pg_list)
 
 if __name__ == '__main__':
     exit(main(sys.argv))
