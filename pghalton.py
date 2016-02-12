@@ -73,16 +73,34 @@ def main(argv):
     PG.print_remap_counter()
     print_counts(pg_list)
 
-    up_map.append(73)
-    up_map.sort()
+    for i in xrange(50, 100):
+        print "Marking OSD %d up" % i
+        up_map.append(i)
+        up_map.sort()
     
-    up_index = 0
-    PG.reset_remap_counter()
-    for pg in pg_list: 
-        up_index = pg.remap(up_map, up_index)
-        pg.print_osds()
-    PG.print_remap_counter()
+        up_index = 0 
+        PG.reset_remap_counter()
+        for pg in pg_list: 
+            up_index = pg.remap(up_map, up_index)
+#            pg.print_osds()
+        PG.print_remap_counter()
+#        print_counts(pg_list)
     print_counts(pg_list)
+
+    for i in xrange(50, 100):
+        print "Marking OSD %d down" % i
+        up_map.remove(i)
+        up_map.sort()
+
+        up_index = 0
+        PG.reset_remap_counter()
+        for pg in pg_list:
+            up_index = pg.remap(up_map, up_index)
+#            pg.print_osds()
+        PG.print_remap_counter()
+#        print_counts(pg_list)
+    print_counts(pg_list)
+
 
 if __name__ == '__main__':
     exit(main(sys.argv))
