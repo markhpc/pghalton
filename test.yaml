@@ -1,0 +1,6 @@
+general:
+  replication: 3
+  potential_osds: 1000
+  acting_osds: 50
+  pgs: 10000
+  offset: 351
