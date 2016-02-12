@@ -53,9 +53,8 @@ class PG:
     def print_remap_counter():
        print "Total OSD PG Targets remapped: %d" % PG.REMAP_COUNT
 
-
     def print_osds(self):
-       print "pg: %s, acting: %s, up: %s" % (self.index, (self.acting_primary, self.acting_secondaries), (self.up_primary, self.up_secondaries))
+       print "pg: %s, acting: %s, up: %s" % (self.index, self.acting, self.up)
 
     def get_acting(self):
         return self.acting
