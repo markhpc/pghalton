@@ -12,5 +12,5 @@ def halton(i, prime):
         i /= prime
     return h
 
-def get_bucket(index, bucket_count):
-    return int(halton(index, PRIMES[0])*bucket_count)
+def get_bucket(index, bucket_count, prime):
+    return int(halton(index, prime)*bucket_count)

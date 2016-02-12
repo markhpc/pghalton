@@ -14,7 +14,7 @@ class PG:
 
         self.acting = []
         for r in xrange(0, rep):
-            self.acting.append(get_bucket(offset+(index*rep)+r, potential_osds))
+            self.acting.append(get_bucket(offset+(index*rep)+r, potential_osds, 2))
 
         self.up = list(self.acting)
 
@@ -26,15 +26,22 @@ class PG:
        remap_count = 0
 
        for i in xrange(0, len(self.up)):
-          # rever to the acting OSD if it's back up
+          # revert to the acting OSD if it's back up
           if self.up[i] != self.acting[i]:
               if self.acting[i] in up_map:
                   self.up[i] = self.acting[i]
                   remap_count+=1
           # If the up OSD is no longer up, find a new one
           if self.up[i] not in up_map:
-              self.up[i] = up_map[get_bucket(up_index, len(up_map))]
+              # Use the next prime for the remap sequence to help avoid OSD collisions
+              new = up_map[get_bucket(up_index, len(up_map), 3)]
               up_index+=1
+              # Make sure the new OSD isn't already in the up map. If so move to next index.
+              # So long as the ordering is the same, this should be repeatable.
+              while new in self.up:
+                  new = up_map[get_bucket(up_index, len(up_map), 3)]
+                  up_index+=1
+              self.up[i] = new
               remap_count+=1
        PG.REMAP_COUNT+=remap_count
        return up_index
