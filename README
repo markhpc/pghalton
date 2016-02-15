@@ -1,0 +1,11 @@
+In my spare time I've started playing around with an idea I've been kicking around since the Inktank days.  Basically I wanted to see what would happen if I tried to use a quasi-monte-carlo method like a Halton Sequence for distributing PGs.
+
+The current toy code is here:
+
+https://github.com/markhpc/pghalton
+
+So the good news is that as expected, the distribution quality is fantastic, even at low PG counts.  Remapping is inexpensive so long as the bucket count is near what was specified in the original mapping, but every bucket removal (or reinsertion) increases the remapping cost by 1/<bucket count>.  IE if you have 70/100 OSDs out, and 1 comes back up, you have ~30% data movement, the same cost in fact if 30 OSDs came back up.  Adding new buckets is also going to be difficult, probably requiring a doubling of the buckets and then marking some of them out to avoid remapping the entire sequence.
+
+I think it would be fairly easy to re-partition the space in this approach to allow for arbitrary weighting and you could probably do something vaguely crush like with hierarchical placement.  The data movement problem is the big issue.  I suspect you could do some kind of fancy tree structure to reduce the remapping cost, but I don't think it would every be as good as crush. 
+
+One kind of interesting thought might be to use something like a halton sequence for "good" PGs, but once PGs go bad, use something crush-like for the bad set so that when OSDs are added back in, the overflow rebalances to them in a sane way.  Still have the expansion problem though... 
