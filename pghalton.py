@@ -5,6 +5,7 @@ import sys
 import pprint
 
 import settings
+import common
 from pg import PG
 from log_support import setup_loggers
 
@@ -73,10 +74,12 @@ def main(argv):
     PG.print_remap_counter()
     print_counts(pg_list)
 
-    for i in xrange(50, 100):
+    for i in xrange(50, 150):
         print "Marking OSD %d up" % i
         up_map.append(i)
         up_map.sort()
+        if len(up_map) > gs.get("potential_osds", 0):
+            gs["potential_osds"] = len(up_map)
     
         up_index = 0 
         PG.reset_remap_counter()
@@ -100,7 +103,8 @@ def main(argv):
         PG.print_remap_counter()
 #        print_counts(pg_list)
     print_counts(pg_list)
-
+    for i in xrange(0, 4):
+        print common.get_layout(i)
 
 if __name__ == '__main__':
     exit(main(sys.argv))

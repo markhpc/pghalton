@@ -1,6 +1,7 @@
 #!/bin/python
 
 import settings
+from bucket_layout import Bucket_Layout
 from common import *
 
 class PG:
@@ -10,12 +11,14 @@ class PG:
         gs = settings.general
         rep = gs.get('replication', 0)
         potential_osds = gs.get('potential_osds', 0)
+        self.bl = Bucket_Layout(potential_osds)
+
         offset = gs.get('offset', 0)
 
         self.acting = []
         self.up = []
         for r in xrange(0, rep):
-            new = get_bucket(offset+(pg_id*rep)+r, potential_osds, 2)
+            new = self.bl.get_bucket(offset+(pg_id*rep)+r, potential_osds, 2)
             self.acting.append(new)
             self.up.append(new)
 
@@ -36,6 +39,7 @@ class PG:
                   remap_count+=1
               # otherwise, try recomputing
               else:
+                 # Use the next prime for the remap sequence to help avoid OSD collisions
                   up_index, new = self.get_new_up(up_map, up_index, 3)
                   # If we didn't get the same OSD as last time, there's a new map and we have to rebalance
                   if self.up[r] != new:
@@ -44,19 +48,19 @@ class PG:
 
           # If the up OSD is no longer up, find a new one
           if self.up[r] not in up_map:
+              # Use the next prime for the remap sequence to help avoid OSD collisions
               up_index, self.up[r] = self.get_new_up(up_map, up_index, 3)
               remap_count+=1
        PG.REMAP_COUNT+=remap_count
        return up_index
 
     def get_new_up(self, up_map, index, prime):
-          # Use the next prime for the remap sequence to help avoid OSD collisions
-          new = up_map[get_bucket(index, len(up_map), prime)]
+          new = up_map[self.bl.get_bucket(index, len(up_map), prime)]
           index+=1
           # Make sure the new OSD isn't already in the up map. If so move to next index.
           # So long as the ordering is the same, this should be repeatable.
           while new in self.up:
-              new = up_map[get_bucket(index, len(up_map), prime)]
+              new = up_map[self.bl.get_bucket(index, len(up_map), prime)]
               index+=1
           return index, new
 
