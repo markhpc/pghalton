@@ -32,9 +32,10 @@ def main(argv):
 
     pool = Pool()
     pool.print_counts() 
-    pool.set_potential_osds(256)
+    pool.set_potential_osds(128)
     pool.print_counts()
-    pool.remap_up()
+    pool.set_potential_osds(128)
+#    pool.remap_up()
     pool.print_counts()
 
 if __name__ == '__main__':
