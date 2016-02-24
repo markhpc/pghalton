@@ -62,7 +62,7 @@ class PG:
         return up_index
 
     def get_new_up(self, r, up_map, index, prime):
-          new = up_map[get_bucket(index, len(up_map), 2)]
+          new = up_map[get_bucket(index, len(up_map), prime)]
           index += 1
 
           # If we've just recomputed the same mapping, return the existing one.
@@ -73,7 +73,7 @@ class PG:
           # long as the ordering is the same, this should be repeatable.
           while new in self.up[0:r]:
 #              print "up_map: %s, self.up[0:r]: %s, self.up: %s, self.acting: %s" % (up_map, self.up[0:r], self.up, self.acting)
-              new = up_map[get_bucket(index, len(up_map), 2)]
+              new = up_map[get_bucket(index, len(up_map), prime)]
               index += 1
           return index, new
 
