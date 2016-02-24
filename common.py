@@ -17,7 +17,7 @@ def halton(i, prime):
 def get_bucket(index, bucket_count, prime):
     return int(halton(index, prime)*bucket_count)
 
-# Use a fractal sequence for creating the bucket layout
+# Use the A003602 fractal sequence for creating the bucket layout
 # This is done to so that buckets remain positioned at the same place in
 # the halton sequence so that data movement is minimal when splitting buckets.
 # ie with 2 buckets (order 1) we have 1,2 with halton ranges 0-0.5 going to
@@ -36,11 +36,13 @@ def A003602():
         yield next(x)
         yield next(y)
 
-# Get the bucket layout given a certain order of buckets
-# ie 1 bucket order 0
-#    2 buckets order 1
-#    4 buckets order 2
-#    8 buckets order 3 ...
+# Get the bucket layout given a certain order of buckets.  This should
+# follow the fractal sequence as described above starting at a given
+# order, ie:
+#    1 bucket order 0, [1]
+#    2 buckets order 1, [1,2]
+#    4 buckets order 2, [1,3,2,4]
+#    8 buckets order 3, [1,5,3,6,2,7,4,8]
 
 def get_layout(order):
     gen = A003602()
