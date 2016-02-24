@@ -32,11 +32,12 @@ def main(argv):
 
     pool = Pool()
     pool.print_counts() 
-    pool.set_potential_osds(128)
-    pool.print_counts()
-    pool.set_potential_osds(128)
-#    pool.remap_up()
-    pool.print_counts()
+
+    for i in xrange(5, 20):
+        print ""
+        print "setting osds to: %s" % i
+        pool.set_osds(i)
+        pool.print_counts()
 
 if __name__ == '__main__':
     exit(main(sys.argv))

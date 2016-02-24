@@ -15,6 +15,9 @@ def halton(i, prime):
     return h
 
 def get_bucket(index, bucket_count, prime):
+#    hal = halton(index, prime)
+#    bucket = int(hal*bucket_count)
+#    print "hal: %s, bucket: %s" % (hal, bucket)
     return int(halton(index, prime)*bucket_count)
 
 # Use the A003602 fractal sequence for creating the bucket layout

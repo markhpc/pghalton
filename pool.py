@@ -1,6 +1,7 @@
 #!/bin/python
 
 import settings
+from bucket_layout import Bucket_Layout
 from pg import PG
 
 class Pool:
@@ -8,40 +9,42 @@ class Pool:
         gs = settings.general
         self.replication = gs.get('replication', 0)
         self.pgs = gs.get('pgs', 0)
-        self.potential_osds = gs.get('potential_osds', 0)
-        self.acting_osds = gs.get('acting_osds', 0)
+        self.osds = gs.get('osds', 0)
+
+        order = Bucket_Layout.compute_order(self.osds)
+        self.bl = Bucket_Layout(2**order)
+
         self.offset = gs.get('offset', 0)
         self.pg_list = []
-
-        down_osds = []
-        for d in xrange(self.acting_osds, self.potential_osds):
-           down_osds.append(d)
-
-        self.up_map = self.make_up_map(down_osds)
         
-        up_index = 0
         for i in xrange(0, self.pgs):
             pg = PG(i, self)
-            up_index = pg.remap_acting(self.up_map, up_index)
-            up_index = pg.remap_up(self.up_map, up_index)
             self.pg_list.append(pg)
+        
+        self.remap_acting()
+        self.remap_up()
 
     def remap_acting(self):
-        up_index = 0
+        self.bl.set_bucket_count(2**self.bl.compute_order(self.osds))
+
         for i in xrange(0, self.pgs):
             pg = self.pg_list[i]
-            up_index = pg.remap_acting(self.up_map, up_index)
+            pg.remap_acting()
 
     def remap_up(self):
+        self.make_up_map()
+#        print "up_map: %s" % self.up_map
         up_index = 0
         for i in xrange(0, self.pgs):
             pg = self.pg_list[i]
 #            print "before pool up remap, up_index: %s" % up_index
             up_index = pg.remap_up(self.up_map, up_index)
 #            print "after pool up remap, up_index: %s" % up_index
-    def set_potential_osds(self, potential_osds):
+
+    def set_osds(self, osds):
         cur = self.get_all_up()
-        self.potential_osds = potential_osds
+        self.osds = osds
+#        print "osds: %s" % self.osds
         self.remap_acting()
         self.remap_up()
         n = self.get_all_up()
@@ -59,16 +62,20 @@ class Pool:
             l += pg.get_up()
         return l
 
-    def make_up_map(self, down_map):
+    def make_up_map(self):
+        down_osds = []
+        for d in xrange(self.osds, 2**self.bl.order()):
+           down_osds.append(d)
+        
         up_map = []
-        for osd in xrange(0, self.potential_osds):
-            if osd not in down_map:
+        for osd in xrange(0, 2**self.bl.order()):
+            if osd not in down_osds:
                 up_map.append(osd)
-        return up_map
+        self.up_map = up_map
 
     def print_counts(self):
-        acting_counts = [0]*self.potential_osds
-        up_counts = [0]*self.potential_osds
+        acting_counts = [0]*(2**self.bl.order())
+        up_counts = [0]*(2**self.bl.order())
 
         for pg in self.pg_list:
             for osd in pg.get_acting():
@@ -80,4 +87,3 @@ class Pool:
         print acting_counts
         print "up_counts"
         print up_counts
-
