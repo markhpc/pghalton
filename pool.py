@@ -12,7 +12,9 @@ class Pool:
         self.osds = gs.get('osds', 0)
 
         order = Bucket_Layout.compute_order(self.osds)
+
         self.bl = Bucket_Layout(2**order)
+        self.bl2 = Bucket_Layout(2**(order - 1))
 
         self.offset = gs.get('offset', 0)
         self.pg_list = []
@@ -25,7 +27,9 @@ class Pool:
         self.remap_up()
 
     def remap_acting(self):
-        self.bl.set_bucket_count(2**self.bl.compute_order(self.osds))
+        new_order = self.bl.compute_order(self.osds)
+        self.bl.set_bucket_count(2**new_order)
+        self.bl2.set_bucket_count(2**(new_order - 1))
 
         for i in xrange(0, self.pgs):
             pg = self.pg_list[i]
@@ -41,12 +45,21 @@ class Pool:
             up_index = pg.remap_up(self.up_map, up_index)
 #            print "after pool up remap, up_index: %s" % up_index
 
+    def remap_up_grow(self):
+        self.make_up_map()
+        count = 0
+        for i in xrange(0, self.pgs):
+            pg = self.pg_list[i]
+            if pg.remap_up_grow(self.up_map, 0):
+                count += 1
+        print "PGs that needed remapping: %s" % count
+
     def set_osds(self, osds):
         cur = self.get_all_up()
         self.osds = osds
 #        print "osds: %s" % self.osds
         self.remap_acting()
-        self.remap_up()
+        self.remap_up_grow()
         n = self.get_all_up()
 
         count = 0

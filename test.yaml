@@ -2,6 +2,6 @@ general:
   replication: 3
 #  potential_osds: 16 
 #  acting_osds: 16
-  osds: 4 
+  osds: 8 
   pgs: 200 
   offset: 351

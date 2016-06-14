@@ -5,7 +5,6 @@ from bucket_layout import Bucket_Layout
 from common import *
 
 class PG:
-    REMAP_COUNT = 0
     def __init__(self, pg_id, pool):
         gs = settings.general
         self.pool = pool
@@ -28,6 +27,19 @@ class PG:
     def using_osd(self, osd):
        if osd in self.acting:
           return True
+
+    def remap_up_grow(self, up_map, up_index):
+        print "pg_id: %s, acting: %s, up: %s" % (self.pg_id, self.acting, self.up)
+
+        if self.acting != self.up:
+           old_order = 2**(self.pool.bl2.order())
+#           print "pg_id: %s, acting: %s, up: %s" % (self.pg_id, self.acting, self.up)
+           for r in xrange (0, self.pool.replication):
+               n = self.pool.bl2.get_bucket(self.pool.offset+(self.pg_id*self.pool.replication)+r, old_order, 2)
+               if self.acting[r] != n and self.acting[r] not in up_map:
+                   print n
+           return True
+        return False
 
     def remap_up(self, up_map, up_index):
        for r in xrange(0, len(self.up)):
@@ -62,6 +74,9 @@ class PG:
         return up_index
 
     def get_new_up(self, r, up_map, index, prime):
+          print "self.up: %s" % self.up
+          return index, self.up[r]
+
           new = up_map[get_bucket(index, len(up_map), prime)]
           index += 1
 

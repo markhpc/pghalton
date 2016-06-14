@@ -33,7 +33,7 @@ def main(argv):
     pool = Pool()
     pool.print_counts() 
 
-    for i in xrange(5, 20):
+    for i in xrange(9, 10):
         print ""
         print "setting osds to: %s" % i
         pool.set_osds(i)
